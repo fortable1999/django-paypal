@@ -3,7 +3,7 @@
 from django import forms
 from django.forms.util import flatatt
 from django.utils.safestring import mark_safe
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 
 class ValueHiddenInput(forms.HiddenInput):
@@ -14,7 +14,7 @@ class ValueHiddenInput(forms.HiddenInput):
 
     def render(self, name, value, attrs=None):
         if value is None:
-            return u''
+            return ''
         else:
             return super(ValueHiddenInput, self).render(name, value, attrs)
 
@@ -30,5 +30,5 @@ class ReservedValueHiddenInput(ValueHiddenInput):
             value = ''
         final_attrs = self.build_attrs(attrs, type=self.input_type)
         if value != '':
-            final_attrs['value'] = force_text(value)
-        return mark_safe(u'<input%s />' % flatatt(final_attrs))
+            final_attrs['value'] = force_str(value)
+        return mark_safe('<input%s />' % flatatt(final_attrs))

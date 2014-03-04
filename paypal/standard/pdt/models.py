@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from urllib import unquote_plus
+import urllib2
 from django.db import models
 from django.conf import settings
 from django.http import QueryDict
 from django.utils.http import urlencode
-from six.moves.urllib.request import urlopen
-from six.moves.urllib.parse import unquote_plus
-
 from paypal.standard.models import PayPalStandardBase
 from paypal.standard.conf import POSTBACK_ENDPOINT, SANDBOX_POSTBACK_ENDPOINT
 from paypal.standard.pdt.signals import pdt_successful, pdt_failed
@@ -47,7 +46,7 @@ class PayPalPDT(PayPalStandardBase):
         """
         postback_dict = dict(cmd="_notify-synch", at=IDENTITY_TOKEN, tx=self.tx)
         postback_params = urlencode(postback_dict)
-        return urlopen(self.get_endpoint(), postback_params).read()
+        return urllib2.urlopen(self.get_endpoint(), postback_params).read()
 
     def get_endpoint(self):
         """Use the sandbox when in DEBUG mode as we don't have a test_ipn variable in pdt."""
@@ -60,7 +59,6 @@ class PayPalPDT(PayPalStandardBase):
         # ### Now we don't really care what result was, just whether a flag was set or not.
         from paypal.standard.pdt.forms import PayPalPDTForm
 
-        # TODO: this needs testing and probably fixing under Python 3
         result = False
         response_list = self.response.split('\n')
         response_dict = {}
@@ -78,7 +76,7 @@ class PayPalPDT(PayPalStandardBase):
                     if not unquoted_line.startswith(' -'):
                         k, v = unquoted_line.split('=')
                         response_dict[k.strip()] = v.strip()
-                except ValueError:
+                except ValueError, e:
                     pass
 
         qd = QueryDict('', mutable=True)

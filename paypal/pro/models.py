@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.conf import settings
+from string import split as L
 from django.db import models
 from django.utils.http import urlencode
 from django.forms.models import model_to_dict
+from django.contrib.auth.models import User
 
 try:
     from idmapper.models import SharedMemoryModel as Model
@@ -14,32 +15,10 @@ except ImportError:
 class PayPalNVP(Model):
     """Record of a NVP interaction with PayPal."""
     TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"  # 2009-02-03T17:47:41Z
-    RESTRICTED_FIELDS = ["expdate",
-                         "cvv2",
-                         "acct",
-                         ]
-    ADMIN_FIELDS = ['id',
-                    'user',
-                    'flag',
-                    'flag_code',
-                    'flag_info',
-                    'query',
-                    'response',
-                    'created_at',
-                    'updated_at',
-                    ]
-    ITEM_FIELDS = ["amt",
-                   "custom",
-                   "invnum",
-                   ]
-    DIRECT_FIELDS = ["firstname",
-                     "lastname",
-                     "street",
-                     "city",
-                     "state",
-                     "countrycode",
-                     "zip",
-                     ]
+    RESTRICTED_FIELDS = L("expdate cvv2 acct")
+    ADMIN_FIELDS = L("id user flag flag_code flag_info query response created_at updated_at ")
+    ITEM_FIELDS = L("amt custom invnum")
+    DIRECT_FIELDS = L("firstname lastname street city state countrycode zip")
 
     # Response fields
     method = models.CharField(max_length=64, blank=True)
@@ -66,8 +45,7 @@ class PayPalNVP(Model):
     custom = models.CharField(max_length=255, blank=True)
 
     # Admin fields
-    user = models.ForeignKey(getattr(settings, 'AUTH_USER_MODEL', 'auth.User'),
-                             blank=True, null=True)
+    user = models.ForeignKey(User, blank=True, null=True)
     flag = models.BooleanField(default=False, blank=True)
     flag_code = models.CharField(max_length=32, blank=True)
     flag_info = models.TextField(blank=True)
@@ -88,7 +66,7 @@ class PayPalNVP(Model):
             self.user = request.user
 
         # No storing credit card info.
-        query_data = dict((k, v) for k, v in paypal_request.items() if k not in self.RESTRICTED_FIELDS)
+        query_data = dict((k, v) for k, v in paypal_request.iteritems() if k not in self.RESTRICTED_FIELDS)
         self.query = urlencode(query_data)
         self.response = urlencode(paypal_response)
 
