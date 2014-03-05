@@ -76,7 +76,7 @@ class PayPalPDT(PayPalStandardBase):
                     if not unquoted_line.startswith(' -'):
                         k, v = unquoted_line.split('=')
                         response_dict[k.strip()] = v.strip()
-                except ValueError, e:
+                except ValueError as e:
                     pass
 
         qd = QueryDict('', mutable=True)
